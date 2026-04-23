@@ -11,10 +11,12 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        handshake_payload: Optional[dict] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.handshake_payload = handshake_payload
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
@@ -69,6 +71,22 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"WebSocket send error: {exc}")
 
+    def send_handshake(self) -> None:
+        if self.handshake_payload is None:
+            return
+
+        missing_fields = [
+            field for field in ("action", "clientId") if not self.handshake_payload.get(field)
+        ]
+        if missing_fields:
+            self.logger.log(
+                "Warning: WebSocket handshake payload missing required fields: "
+                + ", ".join(missing_fields)
+            )
+            return
+
+        self.send_json(self.handshake_payload)
+
     def _set_connected(self, value: bool) -> None:
         self.connected = value
         if self.on_status_change:
@@ -77,8 +95,17 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        self.send_handshake()
 
     def _on_message(self, _ws, message: str) -> None:
+        try:
+            payload = json.loads(message)
+        except json.JSONDecodeError:
+            payload = None
+
+        if isinstance(payload, dict) and payload.get("action") == "handshakeAck":
+            self.logger.log("WebSocket handshake acknowledged.")
+
         if self.on_message:
             self.on_message(message)
         else:

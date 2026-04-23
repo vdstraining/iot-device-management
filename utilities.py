@@ -25,6 +25,15 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "iot-device-simulator",
+            "capabilities": ["subscribe", "ping"],
+            "timestamp": "2026-03-27T12:00:00Z",
+        },
+    },
+    {
         "name": "Echo",
         "payload": {
             "action": "echo",

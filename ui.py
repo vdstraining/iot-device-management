@@ -18,6 +18,8 @@ class AppUI:
         self.selected_option = tk.IntVar(value=0)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
+        self.client_id_var = tk.StringVar(value="")
+        self.token_var = tk.StringVar(value="")
 
         self.request_text = None
         self.log_text = None
@@ -28,8 +30,10 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            on_open=self._handle_ws_open,
         )
         self.ws_connected = False
+        self.handshake_acknowledged = False
 
         self._configure_style()
         self._build_ui()
@@ -86,6 +90,12 @@ class AppUI:
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
 
+        ttk.Label(frame, text="Client ID:").grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.client_id_var).grid(row=2, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Token:").grid(row=3, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.token_var, show="*").grid(row=3, column=1, sticky="ew", padx=8, pady=6)
+
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
         frame.grid(row=3, column=0, sticky="nsew", padx=12, pady=6)
@@ -138,7 +148,7 @@ class AppUI:
         self._load_default_command(selected - 1)
 
     def _load_default_command(self, index: int) -> None:
-        payload = DEFAULT_COMMANDS[index]["payload"]
+        payload = self._resolve_dynamic_fields(DEFAULT_COMMANDS[index]["payload"])
         self.request_text.delete("1.0", tk.END)
         self.request_text.insert("1.0", json.dumps(payload, indent=2))
         self.logger.log(f'Loaded default command: {DEFAULT_COMMANDS[index]["name"]}')
@@ -157,11 +167,94 @@ class AppUI:
             self.logger.log(f"Invalid JSON: {exc}")
             return None
 
+    def _resolve_dynamic_fields(self, value):
+        replacements = {
+            "{{clientId}}": self.client_id_var.get().strip(),
+            "{{token}}": self.token_var.get().strip(),
+        }
+        if isinstance(value, dict):
+            return {
+                key: self._resolve_dynamic_fields(item)
+                for key, item in value.items()
+            }
+        if isinstance(value, list):
+            return [self._resolve_dynamic_fields(item) for item in value]
+        if isinstance(value, str):
+            return replacements.get(value, value)
+        return value
+
+    def _is_handshake_payload(self, payload: dict) -> bool:
+        return payload.get("action") == "handshake" or payload.get("type") == "Handshake"
+
+    def _validate_websocket_payload(self, payload: dict) -> bool:
+        if not isinstance(payload, dict):
+            self.logger.log("WebSocket payload must be a JSON object.")
+            return False
+
+        if not self._is_handshake_payload(payload):
+            return True
+
+        if payload.get("type") != "Handshake":
+            self.logger.log("Handshake validation failed: type must be 'Handshake'.")
+            return False
+
+        if payload.get("action") != "handshake":
+            self.logger.log("Handshake validation failed: action must be 'handshake'.")
+            return False
+
+        for field_name in ("clientId", "token"):
+            field_value = payload.get(field_name, "")
+            if not isinstance(field_value, str):
+                self.logger.log(f"Handshake validation failed: {field_name} must be a string.")
+                return False
+
+        capabilities = payload.get("capabilities")
+        if capabilities is not None and not isinstance(capabilities, list):
+            self.logger.log("Handshake validation failed: capabilities must be an array when provided.")
+            return False
+
+        session_data = payload.get("session")
+        if session_data is not None and not isinstance(session_data, dict):
+            self.logger.log("Handshake validation failed: session must be an object when provided.")
+            return False
+
+        return True
+
+    def _build_handshake_payload(self):
+        for command in DEFAULT_COMMANDS:
+            if command["name"] == "Handshake":
+                return self._resolve_dynamic_fields(command["payload"])
+        return None
+
+    def _send_handshake(self) -> None:
+        payload = self._build_handshake_payload()
+        if payload is None:
+            self.logger.log("Handshake command is not configured.")
+            return
+        if not self._validate_websocket_payload(payload):
+            self.logger.log("Handshake was not sent because validation failed.")
+            return
+        self.handshake_acknowledged = False
+        self.ws_manager.send_json(payload)
+
+    def _handle_ws_open(self) -> None:
+        self.root.after(0, self._send_handshake)
+
     def _handle_ws_message(self, message: str) -> None:
         self.logger.log(f"WebSocket received: {message}")
+        try:
+            payload = json.loads(message)
+        except json.JSONDecodeError:
+            return
+
+        if isinstance(payload, dict) and payload.get("type") in {"Handshake", "HandshakeAck"}:
+            self.handshake_acknowledged = True
+            self.logger.log("Handshake acknowledged by server.")
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+        if not connected:
+            self.handshake_acknowledged = False
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())
@@ -173,6 +266,11 @@ class AppUI:
         payload = self._parse_request_json()
         if payload is None:
             return
+        payload = self._resolve_dynamic_fields(payload)
+        if not self._validate_websocket_payload(payload):
+            return
+        if self._is_handshake_payload(payload):
+            self.handshake_acknowledged = False
         self.ws_manager.send_json(payload)
 
     def send_http(self) -> None:

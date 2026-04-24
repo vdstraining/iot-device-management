@@ -3,6 +3,23 @@ from datetime import datetime
 
 DEFAULT_COMMANDS = [
     {
+        "name": "Handshake",
+        "payload": {
+            "type": "Handshake",
+            "action": "handshake",
+            "clientId": "{{clientId}}",
+            "token": "{{token}}",
+            "capabilities": [
+                "ws",
+                "http",
+                "ui-log",
+            ],
+            "session": {
+                "client": "tkinter-device-manager",
+            },
+        },
+    },
+    {
         "name": "Ping",
         "payload": {
             "action": "ping",

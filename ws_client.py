@@ -11,10 +11,12 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        on_open: Optional[Callable[[], None]] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.on_open = on_open
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
@@ -77,6 +79,8 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        if self.on_open:
+            self.on_open()
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

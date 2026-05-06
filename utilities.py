@@ -45,6 +45,17 @@ DEFAULT_COMMANDS = [
             "timeout": 10,
         },
     },
+    {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "client-001",
+            "version": "1.0",
+            "capabilities": ["ping", "subscribe", "echo"],
+            "token": None,
+            "metadata": {"platform": "tkinter"},
+        },
+    },
 ]
 
 

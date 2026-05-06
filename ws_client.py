@@ -3,6 +3,7 @@ import threading
 from typing import Callable, Optional
 
 from websocket import WebSocketApp
+from handshake import HandshakeManager
 
 
 class WebSocketManager:
@@ -11,13 +12,16 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        auto_send_handshake: bool = False,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.auto_send_handshake = auto_send_handshake
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
+        self.handshake_manager = HandshakeManager(logger)
 
     def connect(self, ws_url: str) -> None:
         if self.connected:
@@ -69,6 +73,17 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"WebSocket send error: {exc}")
 
+    def _send_handshake(self) -> None:
+        """Send handshake message to server."""
+        payload = self.handshake_manager.get_payload()
+        if payload:
+            try:
+                raw_payload = json.dumps(payload)
+                self.ws_app.send(raw_payload)
+                self.logger.log(f"Sending handshake: {raw_payload}")
+            except Exception as exc:
+                self.logger.log(f"Handshake send error: {exc}")
+
     def _set_connected(self, value: bool) -> None:
         self.connected = value
         if self.on_status_change:
@@ -77,6 +92,9 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        if self.auto_send_handshake:
+            self._send_handshake()
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

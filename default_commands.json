@@ -41,5 +41,16 @@
       },
       "timeout": 10
     }
+  },
+  {
+    "name": "Handshake",
+    "payload": {
+      "action": "handshake",
+      "clientId": "client-001",
+      "version": "1.0",
+      "capabilities": ["ping", "subscribe", "echo"],
+      "token": null,
+      "metadata": {"platform": "tkinter"}
+    }
   }
 ]

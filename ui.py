@@ -16,6 +16,7 @@ class AppUI:
         self.root.minsize(900, 680)
 
         self.selected_option = tk.IntVar(value=0)
+        self.auto_send_handshake = tk.BooleanVar(value=False)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
 
@@ -28,6 +29,7 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            auto_send_handshake=self.auto_send_handshake.get(),
         )
         self.ws_connected = False
 
@@ -62,7 +64,7 @@ class AppUI:
     def _build_default_commands_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Default commands")
         frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
-        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
         for index, command in enumerate(DEFAULT_COMMANDS, start=1):
             checkbox = ttk.Checkbutton(
@@ -74,6 +76,15 @@ class AppUI:
                 command=self._on_option_toggle,
             )
             checkbox.grid(row=0, column=index - 1, sticky="w", padx=8, pady=8)
+
+        # Add auto-trigger handshake checkbox on second row
+        auto_trigger_checkbox = ttk.Checkbutton(
+            frame,
+            text="Auto-trigger on connect",
+            variable=self.auto_send_handshake,
+            command=self._on_auto_trigger_toggle,
+        )
+        auto_trigger_checkbox.grid(row=1, column=0, columnspan=2, sticky="w", padx=8, pady=8)
 
     def _build_server_config_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Server configuration")
@@ -136,6 +147,14 @@ class AppUI:
             self.logger.log("Default command selection cleared.")
             return
         self._load_default_command(selected - 1)
+
+    def _on_auto_trigger_toggle(self) -> None:
+        """Handle auto-trigger handshake checkbox toggle."""
+        self.ws_manager.auto_send_handshake = self.auto_send_handshake.get()
+        if self.auto_send_handshake.get():
+            self.logger.log("Auto-trigger handshake on connection: ENABLED")
+        else:
+            self.logger.log("Auto-trigger handshake on connection: DISABLED")
 
     def _load_default_command(self, index: int) -> None:
         payload = DEFAULT_COMMANDS[index]["payload"]

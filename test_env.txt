@@ -1,0 +1,3 @@
+JIRA_BASE_URL=https://hncronostage.atlassian.net
+JIRA_USERNAME=vds.training.general@gmail.com
+JIRA_PASSWORD=Nttdatavds@2026

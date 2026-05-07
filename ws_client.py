@@ -11,6 +11,8 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        auto_handshake: bool = False,
+        handshake_payload: Optional[dict] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
@@ -18,6 +20,14 @@ class WebSocketManager:
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
+        self.auto_handshake = auto_handshake
+        self.handshake_payload = handshake_payload or {
+            "action": "handshake",
+            "clientId": "iot-device-001",
+            "token": "default-token",
+            "timestamp": "2026-05-07T00:00:00Z",
+            "version": "1.0",
+        }
 
     def connect(self, ws_url: str) -> None:
         if self.connected:
@@ -77,6 +87,11 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        # Auto-send handshake if enabled
+        if self.auto_handshake and self.handshake_payload:
+            self.logger.log("Sending handshake message...")
+            self.send_json(self.handshake_payload)
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

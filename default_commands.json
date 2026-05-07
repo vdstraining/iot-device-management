@@ -22,6 +22,16 @@
     }
   },
   {
+    "name": "Handshake",
+    "payload": {
+      "action": "handshake",
+      "clientId": "iot-device-001",
+      "token": "replace-me",
+      "timestamp": "2026-05-07T00:00:00Z",
+      "version": "1.0"
+    }
+  },
+  {
     "name": "Echo",
     "payload": {
       "action": "echo",

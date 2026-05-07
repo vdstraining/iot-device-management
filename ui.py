@@ -28,6 +28,8 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            auto_handshake=False,
+            handshake_payload=None,
         )
         self.ws_connected = False
 

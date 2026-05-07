@@ -1,0 +1,624 @@
+{
+  "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+  "id": "10626",
+  "self": "https://hncronostage.atlassian.net/rest/api/3/issue/10626",
+  "key": "SCRUM-64",
+  "changelog": {
+    "startAt": 0,
+    "maxResults": 2,
+    "total": 2,
+    "histories": [
+      {
+        "id": "11101",
+        "author": {
+          "self": "https://hncronostage.atlassian.net/rest/api/3/user?accountId=712020%3A2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+          "accountId": "712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+          "avatarUrls": {
+            "48x48": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/48",
+            "24x24": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/24",
+            "16x16": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/16",
+            "32x32": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/32"
+          },
+          "displayName": "Hung Le",
+          "active": true,
+          "timeZone": "Asia/Bangkok",
+          "accountType": "atlassian"
+        },
+        "created": "2026-04-24T15:49:30.486+07:00",
+        "items": [
+          {
+            "field": "Rank",
+            "fieldtype": "custom",
+            "fieldId": "customfield_10019",
+            "from": "",
+            "fromString": "",
+            "to": "",
+            "toString": "Ranked higher"
+          }
+        ]
+      },
+      {
+        "id": "11035",
+        "author": {
+          "self": "https://hncronostage.atlassian.net/rest/api/3/user?accountId=712020%3A2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+          "accountId": "712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+          "avatarUrls": {
+            "48x48": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/48",
+            "24x24": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/24",
+            "16x16": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/16",
+            "32x32": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/32"
+          },
+          "displayName": "Hung Le",
+          "active": true,
+          "timeZone": "Asia/Bangkok",
+          "accountType": "atlassian"
+        },
+        "created": "2026-04-24T15:49:21.164+07:00",
+        "items": [
+          {
+            "field": "Sprint",
+            "fieldtype": "custom",
+            "fieldId": "customfield_10020",
+            "from": "",
+            "fromString": "",
+            "to": "68",
+            "toString": "SCRUM Sprint 2"
+          }
+        ]
+      }
+    ]
+  },
+  "fields": {
+    "statuscategorychangedate": "2026-04-24T15:42:56.158+07:00",
+    "issuetype": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/issuetype/10004",
+      "id": "10004",
+      "description": "Stories track functionality or features expressed as user goals.",
+      "iconUrl": "https://hncronostage.atlassian.net/rest/api/2/universal_avatar/view/type/issuetype/avatar/10315?size=medium",
+      "name": "Story",
+      "subtask": false,
+      "avatarId": 10315,
+      "entityId": "e9f0c3c2-412c-4508-a24d-a3ede71cf80b",
+      "hierarchyLevel": 0
+    },
+    "timespent": null,
+    "project": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/project/10000",
+      "id": "10000",
+      "key": "SCRUM",
+      "name": "IoT-Devices-Management",
+      "projectTypeKey": "software",
+      "simplified": true,
+      "avatarUrls": {
+        "48x48": "https://hncronostage.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/10405",
+        "24x24": "https://hncronostage.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/10405?size=small",
+        "16x16": "https://hncronostage.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/10405?size=xsmall",
+        "32x32": "https://hncronostage.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/10405?size=medium"
+      }
+    },
+    "fixVersions": [],
+    "customfield_10033": null,
+    "aggregatetimespent": null,
+    "statusCategory": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/statuscategory/2",
+      "id": 2,
+      "key": "new",
+      "colorName": "blue-gray",
+      "name": "To Do"
+    },
+    "customfield_10035": null,
+    "resolution": null,
+    "resolutiondate": null,
+    "workratio": -1,
+    "issuerestriction": {
+      "issuerestrictions": {},
+      "shouldDisplay": true
+    },
+    "watches": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/issue/SCRUM-64/watchers",
+      "watchCount": 1,
+      "isWatching": false
+    },
+    "lastViewed": "2026-05-07T11:02:36.314+07:00",
+    "created": "2026-04-24T15:42:55.903+07:00",
+    "customfield_10020": [
+      {
+        "id": 68,
+        "name": "SCRUM Sprint 2",
+        "state": "active",
+        "boardId": 1,
+        "goal": "Implement all stories by Github Copilot Agent automatically",
+        "startDate": "2026-04-24T08:32:49.385Z",
+        "endDate": "2026-05-29T08:33:00Z"
+      }
+    ],
+    "customfield_10021": null,
+    "priority": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/priority/2",
+      "iconUrl": "https://hncronostage.atlassian.net/images/icons/priorities/high_new.svg",
+      "name": "High",
+      "id": "2"
+    },
+    "labels": [],
+    "customfield_10016": null,
+    "customfield_10019": "0|i0007h:zzz",
+    "timeestimate": null,
+    "aggregatetimeoriginalestimate": null,
+    "versions": [],
+    "issuelinks": [],
+    "assignee": null,
+    "updated": "2026-04-24T15:49:30.486+07:00",
+    "status": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/status/10000",
+      "description": "",
+      "iconUrl": "https://hncronostage.atlassian.net/images/icons/statuses/generic.png",
+      "name": "To Do",
+      "id": "10000",
+      "statusCategory": {
+        "self": "https://hncronostage.atlassian.net/rest/api/3/statuscategory/2",
+        "id": 2,
+        "key": "new",
+        "colorName": "blue-gray",
+        "name": "To Do"
+      }
+    },
+    "components": [],
+    "timeoriginalestimate": null,
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "orderedList",
+          "attrs": {
+            "order": 1
+          },
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Objective",
+                      "marks": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "Implement a new handshake message mechanism to establish an initial communication contract between client and server, similar to existing default commands (e.g., "
+            },
+            {
+              "type": "text",
+              "text": "Subscribe",
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ", "
+            },
+            {
+              "type": "text",
+              "text": "Ping",
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ")."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "This handshake will be sent after a successful connection (e.g., WebSocket connect) to identify client capabilities, session metadata, or authentication context."
+            }
+          ]
+        },
+        {
+          "type": "orderedList",
+          "attrs": {
+            "order": 2
+          },
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Scope",
+                      "marks": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 3
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "✅ In scope:"
+            }
+          ]
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Define a new handshake message structure (JSON format)"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Implement logic to:"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulletList",
+                  "content": [
+                    {
+                      "type": "listItem",
+                      "content": ""
+                    },
+                    {
+                      "type": "listItem",
+                      "content": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Add handshake message to default commands list (similar to "
+                    },
+                    {
+                      "type": "text",
+                      "text": "Subscribe",
+                      "marks": ""
+                    },
+                    {
+                      "type": "text",
+                      "text": ", "
+                    },
+                    {
+                      "type": "text",
+                      "text": "Ping",
+                      "marks": ""
+                    },
+                    {
+                      "type": "text",
+                      "text": ", etc.)"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Ensure handshake message is:"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulletList",
+                  "content": [
+                    {
+                      "type": "listItem",
+                      "content": ""
+                    },
+                    {
+                      "type": "listItem",
+                      "content": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Handle server response for handshake:"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulletList",
+                  "content": [
+                    {
+                      "type": "listItem",
+                      "content": ""
+                    },
+                    {
+                      "type": "listItem",
+                      "content": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Add configuration support if handshake requires dynamic fields (e.g., clientId, token)"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 3
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "✅ Out of scope:",
+              "marks": [
+                {
+                  "type": "strong"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Changes to server-side handshake implementation"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "UI redesign or layout changes (only minimal integration into existing UI if needed)"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Breaking changes to existing command formats or APIs"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Authentication flow redesign"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Persistent session management"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "orderedList",
+          "attrs": {
+            "order": 3
+          },
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Related Jira tickets summary",
+                      "marks": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "N/A (or link related tickets if available)"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "timetracking": {},
+    "customfield_10015": null,
+    "security": null,
+    "attachment": [],
+    "aggregatetimeestimate": null,
+    "summary": "[Story 064] Implement new handshake message to server",
+    "creator": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/user?accountId=712020%3A2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+      "accountId": "712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+      "avatarUrls": {
+        "48x48": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/48",
+        "24x24": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/24",
+        "16x16": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/16",
+        "32x32": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/32"
+      },
+      "displayName": "Hung Le",
+      "active": true,
+      "timeZone": "Asia/Bangkok",
+      "accountType": "atlassian"
+    },
+    "subtasks": [],
+    "reporter": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/user?accountId=712020%3A2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+      "accountId": "712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc",
+      "avatarUrls": {
+        "48x48": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/48",
+        "24x24": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/24",
+        "16x16": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/16",
+        "32x32": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/712020:2dbf12b2-badd-4932-a6fa-88b621d42cbc/1a7a39ed-54d3-4ddc-8816-46d2fb418d8d/32"
+      },
+      "displayName": "Hung Le",
+      "active": true,
+      "timeZone": "Asia/Bangkok",
+      "accountType": "atlassian"
+    },
+    "aggregateprogress": {
+      "progress": 0,
+      "total": 0
+    },
+    "customfield_10000": "{}",
+    "customfield_10001": null,
+    "environment": null,
+    "duedate": null,
+    "progress": {
+      "progress": 0,
+      "total": 0
+    },
+    "votes": {
+      "self": "https://hncronostage.atlassian.net/rest/api/3/issue/SCRUM-64/votes",
+      "votes": 0,
+      "hasVoted": false
+    },
+    "comment": {
+      "comments": [],
+      "self": "https://hncronostage.atlassian.net/rest/api/3/issue/10626/comment",
+      "maxResults": 0,
+      "total": 0,
+      "startAt": 0
+    },
+    "worklog": {
+      "startAt": 0,
+      "maxResults": 20,
+      "total": 0,
+      "worklogs": []
+    }
+  }
+}

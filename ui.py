@@ -18,6 +18,7 @@ class AppUI:
         self.selected_option = tk.IntVar(value=0)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
+        self.enable_auto_handshake_var = tk.BooleanVar(value=True)
 
         self.request_text = None
         self.log_text = None
@@ -28,6 +29,7 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            enable_auto_handshake=self.enable_auto_handshake_var.get(),
         )
         self.ws_connected = False
 
@@ -85,6 +87,13 @@ class AppUI:
 
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Checkbutton(
+            frame,
+            text="Auto-send handshake",
+            variable=self.enable_auto_handshake_var,
+            command=self._update_auto_handshake_setting,
+        ).grid(row=2, column=0, columnspan=2, sticky="w", padx=8, pady=6)
 
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
@@ -163,6 +172,12 @@ class AppUI:
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
 
+    def _update_auto_handshake_setting(self) -> None:
+        """Update auto-handshake setting in WebSocketManager."""
+        self.ws_manager.enable_auto_handshake = self.enable_auto_handshake_var.get()
+        status = "enabled" if self.ws_manager.enable_auto_handshake else "disabled"
+        self.logger.log(f"Auto-handshake {status}.")
+    
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())
 

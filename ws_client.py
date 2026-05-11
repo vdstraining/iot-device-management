@@ -11,13 +11,16 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        enable_auto_handshake: bool = True,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.enable_auto_handshake = enable_auto_handshake
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
+        self._handshake_sent = False
 
     def connect(self, ws_url: str) -> None:
         if self.connected:
@@ -77,8 +80,53 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        # Trigger automatic handshake if enabled (within 100ms of connection)
+        if self.enable_auto_handshake and not self._handshake_sent:
+            threading.Timer(0.05, self._send_handshake).start()
 
+    def _send_handshake(self) -> None:
+        """Construct, validate, and send handshake payload to server."""
+        if not self.connected or self.ws_app is None:
+            self.logger.log("Cannot send handshake: WebSocket not connected.")
+            return
+        
+        try:
+            # Construct handshake payload
+            handshake_payload = {
+                "action": "handshake",
+                "client_version": "1.0",
+                "client_id": "replace-me",
+                "capabilities": [],
+                "auth_token": None,
+            }
+            
+            # Validate JSON
+            raw_payload = json.dumps(handshake_payload)
+            json.loads(raw_payload)  # Validate by re-parsing
+            
+            # Send via existing method
+            self.send_json(handshake_payload)
+            self._handshake_sent = True
+            self.logger.log("Handshake sent to server.")
+        except json.JSONDecodeError as exc:
+            self.logger.log(f"Handshake JSON validation error: {exc}")
+        except Exception as exc:
+            self.logger.log(f"Handshake send error: {exc}")
+    
     def _on_message(self, _ws, message: str) -> None:
+        # Check if message is a handshake response
+        try:
+            msg_data = json.loads(message)
+            if msg_data.get("action") == "handshake":
+                self.logger.log(f"Handshake response received: {message}")
+                if self.on_message:
+                    self.on_message(message)
+                return
+        except json.JSONDecodeError:
+            # Not JSON, will be handled by default logic below
+            pass
+        
+        # Default message handling
         if self.on_message:
             self.on_message(message)
         else:
@@ -89,4 +137,5 @@ class WebSocketManager:
 
     def _on_close(self, _ws, close_status_code, close_msg) -> None:
         self._set_connected(False)
+        self._handshake_sent = False  # Reset handshake flag for next connection
         self.logger.log(f"WebSocket closed. code={close_status_code}, message={close_msg}")

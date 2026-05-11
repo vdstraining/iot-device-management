@@ -45,6 +45,16 @@ DEFAULT_COMMANDS = [
             "timeout": 10,
         },
     },
+    {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "client_version": "1.0",
+            "client_id": "replace-me",
+            "capabilities": [],
+            "auth_token": None,
+        },
+    },
 ]
 
 

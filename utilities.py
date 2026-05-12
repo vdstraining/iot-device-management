@@ -3,6 +3,14 @@ from datetime import datetime
 
 DEFAULT_COMMANDS = [
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "device-001",
+            "token": "replace-me",
+        },
+    },
+    {
         "name": "Ping",
         "payload": {
             "action": "ping",

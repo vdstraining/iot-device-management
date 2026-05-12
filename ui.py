@@ -18,6 +18,8 @@ class AppUI:
         self.selected_option = tk.IntVar(value=0)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
+        self.client_id_var = tk.StringVar(value="")
+        self.token_var = tk.StringVar(value="")
 
         self.request_text = None
         self.log_text = None
@@ -62,7 +64,7 @@ class AppUI:
     def _build_default_commands_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Default commands")
         frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
-        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        frame.columnconfigure(tuple(range(len(DEFAULT_COMMANDS))), weight=1)
 
         for index, command in enumerate(DEFAULT_COMMANDS, start=1):
             checkbox = ttk.Checkbutton(
@@ -85,6 +87,12 @@ class AppUI:
 
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Client ID (optional):").grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.client_id_var).grid(row=2, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Token (optional):").grid(row=3, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.token_var).grid(row=3, column=1, sticky="ew", padx=8, pady=6)
 
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
@@ -162,6 +170,8 @@ class AppUI:
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+        if connected:
+            self._auto_send_handshake_if_selected()
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())
@@ -173,6 +183,10 @@ class AppUI:
         payload = self._parse_request_json()
         if payload is None:
             return
+        if not self._validate_ws_payload(payload):
+            return
+        if self._is_handshake_payload(payload):
+            payload = self._apply_client_auth(payload)
         self.ws_manager.send_json(payload)
 
     def send_http(self) -> None:
@@ -183,6 +197,40 @@ class AppUI:
             base_url=self.http_url_var.get().strip(),
             request_data=request_data,
         )
+
+    def _validate_ws_payload(self, payload) -> bool:
+        if not isinstance(payload, dict):
+            self.logger.log("WebSocket payload must be a JSON object.")
+            return False
+        if "method" in payload and "path" in payload:
+            self.logger.log("Request looks like HTTP JSON. Use Send HTTP.")
+            return False
+        return True
+
+    def _is_handshake_payload(self, payload: dict) -> bool:
+        return str(payload.get("action", "")).lower() == "handshake"
+
+    def _apply_client_auth(self, payload: dict) -> dict:
+        updated = dict(payload)
+        client_id = self.client_id_var.get().strip()
+        token = self.token_var.get().strip()
+        if client_id:
+            updated["clientId"] = client_id
+        if token:
+            updated["token"] = token
+        return updated
+
+    def _auto_send_handshake_if_selected(self) -> None:
+        payload = self._parse_request_json()
+        if payload is None:
+            return
+        if not self._validate_ws_payload(payload):
+            return
+        if not self._is_handshake_payload(payload):
+            return
+        payload = self._apply_client_auth(payload)
+        self.logger.log("Auto-sending handshake on connect.")
+        self.ws_manager.send_json(payload)
 
     def run(self) -> None:
         self.root.mainloop()

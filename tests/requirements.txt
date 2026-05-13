@@ -1,0 +1,23 @@
+# Test dependencies for SCRUM-113 handshake tests
+
+# Core testing framework
+pytest>=6.0.0
+pytest-mock>=3.6.0
+
+# Coverage reporting (optional but recommended)
+pytest-cov>=2.12.0
+
+# Parallel test execution (optional)
+pytest-xdist>=2.3.0
+
+# Test timeout support (optional)
+pytest-timeout>=1.4.0
+
+# Additional testing utilities
+mock>=4.0.0
+
+# For verbose output and better formatting (optional)
+pytest-sugar>=0.9.0
+
+# Type checking during tests (optional)
+pytest-mypy>=0.9.0

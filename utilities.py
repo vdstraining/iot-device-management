@@ -3,6 +3,15 @@ from datetime import datetime
 
 DEFAULT_COMMANDS = [
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "tkinter-client-001",
+            "token": "replace-me",
+            "timestamp": "2026-03-27T12:00:00Z",
+        },
+    },
+    {
         "name": "Ping",
         "payload": {
             "action": "ping",

@@ -1,51 +1,9 @@
+import json
 from datetime import datetime
 
 
-DEFAULT_COMMANDS = [
-    {
-        "name": "Ping",
-        "payload": {
-            "action": "ping",
-            "timestamp": "2026-03-27T12:00:00Z",
-        },
-    },
-    {
-        "name": "Login",
-        "payload": {
-            "action": "login",
-            "username": "demo_user",
-            "token": "replace-me",
-        },
-    },
-    {
-        "name": "Subscribe",
-        "payload": {
-            "action": "subscribe",
-            "channel": "events",
-        },
-    },
-    {
-        "name": "Echo",
-        "payload": {
-            "action": "echo",
-            "message": "hello from tkinter client",
-        },
-    },
-    {
-        "name": "HTTP POST sample",
-        "payload": {
-            "method": "POST",
-            "path": "/api/commands",
-            "headers": {
-                "Content-Type": "application/json",
-            },
-            "body": {
-                "action": "status",
-            },
-            "timeout": 10,
-        },
-    },
-]
+with open("default_commands.json", "r") as f:
+    DEFAULT_COMMANDS = json.load(f)
 
 
 class AppLogger:

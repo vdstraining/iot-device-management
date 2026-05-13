@@ -11,10 +11,12 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        handshake_payload: Optional[dict] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.handshake_payload = handshake_payload
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
@@ -57,6 +59,14 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"Disconnect error: {exc}")
 
+    def set_handshake_payload(self, payload: Optional[dict]) -> None:
+        """Set or update the handshake payload to be sent on connection."""
+        self.handshake_payload = payload
+        if payload:
+            self.logger.log("Handshake payload configured.")
+        else:
+            self.logger.log("Handshake payload cleared.")
+
     def send_json(self, payload: dict) -> None:
         if not self.connected or self.ws_app is None:
             self.logger.log("Cannot send via WebSocket: not connected.")
@@ -77,6 +87,15 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        # Send handshake message if configured
+        if self.handshake_payload:
+            try:
+                raw_payload = json.dumps(self.handshake_payload)
+                self.ws_app.send(raw_payload)
+                self.logger.log(f"Sent WebSocket handshake: {raw_payload}")
+            except Exception as exc:
+                self.logger.log(f"WebSocket handshake send error: {exc}")
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

@@ -24,10 +24,14 @@ class AppUI:
 
         self.logger = AppLogger(self._append_log)
         self.http_client = HttpClient(self.logger)
+        
+        # Initialize with handshake payload from the first default command
+        handshake_payload = DEFAULT_COMMANDS[0]["payload"] if DEFAULT_COMMANDS else None
         self.ws_manager = WebSocketManager(
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            handshake_payload=handshake_payload,
         )
         self.ws_connected = False
 
@@ -141,6 +145,11 @@ class AppUI:
         payload = DEFAULT_COMMANDS[index]["payload"]
         self.request_text.delete("1.0", tk.END)
         self.request_text.insert("1.0", json.dumps(payload, indent=2))
+        
+        # If the selected command is a handshake, update the WebSocketManager's handshake payload
+        if payload.get("action") == "handshake":
+            self.ws_manager.set_handshake_payload(payload)
+        
         self.logger.log(f'Loaded default command: {DEFAULT_COMMANDS[index]["name"]}')
 
     def _get_request_text(self) -> str:

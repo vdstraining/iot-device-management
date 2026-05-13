@@ -1,4 +1,8 @@
-﻿import sys\nimport os\nimport json\n# ensure repo root on sys.path\nsys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+﻿import sys
+import os
+import json
+# ensure repo root on sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.firmware.api import app
 from backend.firmware.models import JOB_STORE, FirmwareUpdateJob
 from backend.firmware.scheduler import run_job

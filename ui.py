@@ -28,6 +28,8 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            client_id="client_123",
+            token="demo_token",
         )
         self.ws_connected = False
 

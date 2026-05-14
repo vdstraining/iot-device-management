@@ -1,6 +1,39 @@
 from datetime import datetime
 
 
+def build_handshake_payload(
+    client_id: str,
+    token: str,
+    capabilities: str,
+    session_id: str,
+) -> dict:
+    return {
+        "action": "handshake",
+        "clientId": client_id or "client-001",
+        "capabilities": [item.strip() for item in capabilities.split(",") if item.strip()] or ["ping", "subscribe"],
+        "metadata": {
+            "sessionId": session_id or "session-001",
+        },
+        "auth": {
+            "token": token or "replace-me",
+        },
+    }
+
+
+def validate_handshake_payload(payload: dict) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    if payload.get("action") != "handshake":
+        return False
+    if not payload.get("clientId"):
+        return False
+    if not payload.get("auth") or not payload["auth"].get("token"):
+        return False
+    if not isinstance(payload.get("capabilities"), list):
+        return False
+    return True
+
+
 DEFAULT_COMMANDS = [
     {
         "name": "Ping",
@@ -23,6 +56,15 @@ DEFAULT_COMMANDS = [
             "action": "subscribe",
             "channel": "events",
         },
+    },
+    {
+        "name": "Handshake",
+        "payload": build_handshake_payload(
+            client_id="demo_client",
+            token="replace-me",
+            capabilities="ping,subscribe",
+            session_id="demo_session",
+        ),
     },
     {
         "name": "Echo",

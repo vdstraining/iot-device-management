@@ -5,7 +5,7 @@ from tkinter.scrolledtext import ScrolledText
 
 from ws_client import WebSocketManager
 from http_client import HttpClient
-from utilities import AppLogger, DEFAULT_COMMANDS
+from utilities import AppLogger, DEFAULT_COMMANDS, build_handshake_payload, validate_handshake_payload
 
 
 class AppUI:
@@ -18,6 +18,10 @@ class AppUI:
         self.selected_option = tk.IntVar(value=0)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
+        self.client_id_var = tk.StringVar(value="demo_client")
+        self.auth_token_var = tk.StringVar(value="replace-me")
+        self.capabilities_var = tk.StringVar(value="ping,subscribe")
+        self.session_id_var = tk.StringVar(value="demo_session")
 
         self.request_text = None
         self.log_text = None
@@ -86,6 +90,30 @@ class AppUI:
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
 
+        ttk.Label(frame, text="Client ID:").grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.client_id_var).grid(row=2, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Auth Token:").grid(row=3, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.auth_token_var).grid(row=3, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Capabilities:").grid(row=4, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.capabilities_var).grid(row=4, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Session ID:").grid(row=5, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.session_id_var).grid(row=5, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Client ID:").grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.client_id_var).grid(row=2, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Auth Token:").grid(row=3, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.auth_token_var).grid(row=3, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Capabilities:").grid(row=4, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.capabilities_var).grid(row=4, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Session ID:").grid(row=5, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.session_id_var).grid(row=5, column=1, sticky="ew", padx=8, pady=6)
+
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
         frame.grid(row=3, column=0, sticky="nsew", padx=12, pady=6)
@@ -111,6 +139,7 @@ class AppUI:
         ttk.Button(frame, text="Disconnect", command=self.disconnect).grid(row=0, column=1, sticky="ew", padx=6, pady=6)
         ttk.Button(frame, text="Send", command=self.send_websocket).grid(row=0, column=2, sticky="ew", padx=6, pady=6)
         ttk.Button(frame, text="Send HTTP", command=self.send_http).grid(row=0, column=3, sticky="ew", padx=6, pady=6)
+        ttk.Button(frame, text="Send Handshake", command=self.send_handshake).grid(row=0, column=4, sticky="ew", padx=6, pady=6)
 
     def _build_log_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Logs")
@@ -159,9 +188,39 @@ class AppUI:
 
     def _handle_ws_message(self, message: str) -> None:
         self.logger.log(f"WebSocket received: {message}")
+        self._log_handshake_response(message)
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+        if connected:
+            self.logger.log("Auto-sending handshake after WebSocket connect.")
+            self.send_handshake()
+
+    def _build_handshake_payload(self) -> dict:
+        return build_handshake_payload(
+            client_id=self.client_id_var.get().strip(),
+            token=self.auth_token_var.get().strip(),
+            capabilities=self.capabilities_var.get().strip(),
+            session_id=self.session_id_var.get().strip(),
+        )
+
+    def _log_handshake_response(self, message: str) -> None:
+        try:
+            data = json.loads(message)
+        except json.JSONDecodeError:
+            return
+        if data.get("action") == "handshake_response" or data.get("status"):
+            self.logger.log(f"Handshake response received: {message}")
+
+    def send_handshake(self) -> None:
+        payload = self._build_handshake_payload()
+        if not validate_handshake_payload(payload):
+            self.logger.log("Invalid handshake payload. Ensure clientId, auth token, and capabilities are configured.")
+            return
+        if not self.ws_connected:
+            self.logger.log("Cannot send handshake: WebSocket is not connected.")
+            return
+        self.ws_manager.send_json(payload)
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())

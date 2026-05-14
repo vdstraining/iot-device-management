@@ -10,6 +10,15 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "client_123",
+            "token": "demo_token",
+            "timestamp": "2026-03-27T12:00:00Z",
+        },
+    },
+    {
         "name": "Login",
         "payload": {
             "action": "login",

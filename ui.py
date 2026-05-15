@@ -30,6 +30,8 @@ class AppUI:
             on_status_change=self._handle_ws_status_change,
         )
         self.ws_connected = False
+        self.handshake_sent = False
+        self.handshake_completed = False
 
         self._configure_style()
         self._build_ui()
@@ -146,6 +148,29 @@ class AppUI:
     def _get_request_text(self) -> str:
         return self.request_text.get("1.0", tk.END).strip()
 
+    def _build_handshake_payload(self) -> dict:
+        client_id = self.ws_url_var.get().strip().replace("ws://", "").replace("wss://", "").split("/")[0]
+        if not client_id:
+            client_id = "device-001"
+        return {
+            "action": "handshake",
+            "clientId": client_id,
+            "token": "replace-me",
+            "capabilities": ["telemetry", "status", "commands"],
+            "sessionMeta": {
+                "source": "simulator",
+                "websocketUrl": self.ws_url_var.get().strip(),
+            },
+        }
+
+    def _send_handshake(self) -> None:
+        if not self.ws_connected or self.handshake_sent:
+            return
+        payload = self._build_handshake_payload()
+        self.logger.log("Sending handshake message.")
+        self.ws_manager.send_json(payload)
+        self.handshake_sent = True
+
     def _parse_request_json(self):
         raw_text = self._get_request_text()
         if not raw_text:
@@ -159,9 +184,25 @@ class AppUI:
 
     def _handle_ws_message(self, message: str) -> None:
         self.logger.log(f"WebSocket received: {message}")
+        try:
+            payload = json.loads(message)
+            action = str(payload.get("action", "")).lower()
+            response_type = str(payload.get("type", "")).lower()
+            if action in {"handshake_response", "handshake_ack"} or response_type == "handshake":
+                self.handshake_completed = True
+                self.logger.log("Handshake response processed.")
+        except json.JSONDecodeError:
+            pass
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+        if connected:
+            self.handshake_sent = False
+            self.handshake_completed = False
+            self.root.after(0, self._send_handshake)
+        else:
+            self.handshake_sent = False
+            self.handshake_completed = False
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())
@@ -186,3 +227,5 @@ class AppUI:
 
     def run(self) -> None:
         self.root.mainloop()
+
+

@@ -18,6 +18,18 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "device-001",
+            "token": "replace-me",
+            "capabilities": ["telemetry", "status", "commands"],
+            "sessionMeta": {
+                "source": "simulator",
+            },
+        },
+    },
+    {
         "name": "Subscribe",
         "payload": {
             "action": "subscribe",

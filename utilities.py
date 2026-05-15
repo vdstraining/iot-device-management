@@ -10,6 +10,16 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "client_001",
+            "capabilities": ["websocket", "http"],
+            "protocolVersion": "1.0",
+            "timestamp": "2026-05-13T00:00:00Z",
+        },
+    },
+    {
         "name": "Login",
         "payload": {
             "action": "login",
@@ -29,20 +39,6 @@ DEFAULT_COMMANDS = [
         "payload": {
             "action": "echo",
             "message": "hello from tkinter client",
-        },
-    },
-    {
-        "name": "HTTP POST sample",
-        "payload": {
-            "method": "POST",
-            "path": "/api/commands",
-            "headers": {
-                "Content-Type": "application/json",
-            },
-            "body": {
-                "action": "status",
-            },
-            "timeout": 10,
         },
     },
 ]

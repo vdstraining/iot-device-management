@@ -11,10 +11,12 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        auto_handshake: bool = False,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.auto_handshake = auto_handshake
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
@@ -69,6 +71,20 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"WebSocket send error: {exc}")
 
+    def send_handshake(self, client_id: str = "client_001") -> None:
+        """Send handshake message to server."""
+        from datetime import datetime
+        
+        handshake_payload = {
+            "action": "handshake",
+            "clientId": client_id,
+            "capabilities": ["websocket", "http"],
+            "protocolVersion": "1.0",
+            "timestamp": datetime.now().isoformat() + "Z",
+        }
+        self.logger.log(f"Sending handshake with clientId: {client_id}")
+        self.send_json(handshake_payload)
+
     def _set_connected(self, value: bool) -> None:
         self.connected = value
         if self.on_status_change:
@@ -77,6 +93,9 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        if self.auto_handshake:
+            self.logger.log("Sending automatic handshake...")
+            self.send_handshake()
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

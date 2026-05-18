@@ -5,7 +5,7 @@ from tkinter.scrolledtext import ScrolledText
 
 from ws_client import WebSocketManager
 from http_client import HttpClient
-from utilities import AppLogger, DEFAULT_COMMANDS
+from utilities import AppLogger, DEFAULT_COMMANDS, get_handshake_payload
 
 
 class AppUI:
@@ -62,7 +62,7 @@ class AppUI:
     def _build_default_commands_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Default commands")
         frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
-        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
         for index, command in enumerate(DEFAULT_COMMANDS, start=1):
             checkbox = ttk.Checkbutton(
@@ -138,10 +138,15 @@ class AppUI:
         self._load_default_command(selected - 1)
 
     def _load_default_command(self, index: int) -> None:
-        payload = DEFAULT_COMMANDS[index]["payload"]
+        command = DEFAULT_COMMANDS[index]
+        # Handle dynamic handshake payload
+        if command["name"] == "Handshake":
+            payload = get_handshake_payload()
+        else:
+            payload = command["payload"]
         self.request_text.delete("1.0", tk.END)
         self.request_text.insert("1.0", json.dumps(payload, indent=2))
-        self.logger.log(f'Loaded default command: {DEFAULT_COMMANDS[index]["name"]}')
+        self.logger.log(f'Loaded default command: {command["name"]}')
 
     def _get_request_text(self) -> str:
         return self.request_text.get("1.0", tk.END).strip()

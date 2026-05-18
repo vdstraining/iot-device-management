@@ -3,6 +3,7 @@ import threading
 from typing import Callable, Optional
 
 from websocket import WebSocketApp
+from utilities import get_handshake_payload
 
 
 class WebSocketManager:
@@ -74,9 +75,32 @@ class WebSocketManager:
         if self.on_status_change:
             self.on_status_change(value)
 
+    def _validate_handshake_payload(self, payload: dict) -> bool:
+        """Validate handshake payload structure before sending."""
+        required_fields = {"action", "clientId", "token", "timestamp"}
+        if not isinstance(payload, dict):
+            self.logger.log("Handshake validation failed: payload is not a dict.")
+            return False
+        if not required_fields.issubset(payload.keys()):
+            missing = required_fields - payload.keys()
+            self.logger.log(f"Handshake validation failed: missing fields {missing}.")
+            return False
+        return True
+
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        # Auto-send handshake message after successful connection
+        handshake_payload = get_handshake_payload()
+        if self._validate_handshake_payload(handshake_payload):
+            try:
+                raw_payload = json.dumps(handshake_payload)
+                self.ws_app.send(raw_payload)
+                self.logger.log(f"Sent handshake message: {raw_payload}")
+            except Exception as exc:
+                self.logger.log(f"Failed to send handshake: {exc}")
+        else:
+            self.logger.log("Handshake validation failed, skipping auto-send.")
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

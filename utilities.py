@@ -1,4 +1,18 @@
+import os
 from datetime import datetime
+
+
+def get_handshake_payload():
+    """Generate handshake payload with dynamic fields from environment variables."""
+    client_id = os.getenv("IOT_CLIENT_ID", "iot-device-client")
+    token = os.getenv("IOT_CLIENT_TOKEN", "demo-token")
+    timestamp = datetime.now().isoformat() + "Z"
+    return {
+        "action": "handshake",
+        "clientId": client_id,
+        "token": token,
+        "timestamp": timestamp,
+    }
 
 
 DEFAULT_COMMANDS = [
@@ -44,6 +58,10 @@ DEFAULT_COMMANDS = [
             },
             "timeout": 10,
         },
+    },
+    {
+        "name": "Handshake",
+        "payload": None,  # Dynamically populated by get_handshake_payload()
     },
 ]
 

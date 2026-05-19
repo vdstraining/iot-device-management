@@ -8,6 +8,27 @@ from http_client import HttpClient
 from utilities import AppLogger, DEFAULT_COMMANDS
 
 
+def build_handshake_payload(client_id: str, token: str, logger=None):
+    client_id = client_id.strip()
+    token = token.strip()
+
+    if not client_id or not token:
+        if logger:
+            logger.log("Handshake validation failed: clientId and token are required.")
+        return None
+
+    payload = {
+        "action": "handshake",
+        "clientId": client_id,
+        "token": token,
+    }
+
+    if logger:
+        logger.log(f"Prepared handshake payload: clientId={client_id}")
+
+    return payload
+
+
 class AppUI:
     def __init__(self) -> None:
         self.root = tk.Tk()
@@ -18,6 +39,8 @@ class AppUI:
         self.selected_option = tk.IntVar(value=0)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
+        self.handshake_client_id_var = tk.StringVar(value="client-123")
+        self.handshake_token_var = tk.StringVar(value="replace-me")
 
         self.request_text = None
         self.log_text = None
@@ -28,6 +51,7 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            on_open=self._on_ws_open,
         )
         self.ws_connected = False
 
@@ -85,6 +109,12 @@ class AppUI:
 
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Client ID:").grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.handshake_client_id_var).grid(row=2, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Auth Token:").grid(row=3, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.handshake_token_var, show="*").grid(row=3, column=1, sticky="ew", padx=8, pady=6)
 
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
@@ -159,9 +189,29 @@ class AppUI:
 
     def _handle_ws_message(self, message: str) -> None:
         self.logger.log(f"WebSocket received: {message}")
+        try:
+            data = json.loads(message)
+            if isinstance(data, dict) and data.get("action") in ("handshake_response", "handshake_ack"):
+                self.logger.log("Handshake response received.")
+        except json.JSONDecodeError:
+            pass
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+
+    def _build_handshake_payload(self):
+        return build_handshake_payload(
+            self.handshake_client_id_var.get(),
+            self.handshake_token_var.get(),
+            logger=self.logger,
+        )
+
+    def _on_ws_open(self) -> None:
+        payload = self._build_handshake_payload()
+        if payload is None:
+            self.logger.log("Handshake was not sent due to invalid payload.")
+            return
+        self.ws_manager.send_json(payload, description="handshake")
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())

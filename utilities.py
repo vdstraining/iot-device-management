@@ -10,6 +10,14 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "replace-me",
+            "token": "replace-me",
+        },
+    },
+    {
         "name": "Login",
         "payload": {
             "action": "login",

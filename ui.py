@@ -28,6 +28,7 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            on_handshake_sent=self._handle_handshake_sent,
         )
         self.ws_connected = False
 
@@ -62,7 +63,7 @@ class AppUI:
     def _build_default_commands_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Default commands")
         frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
-        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
         for index, command in enumerate(DEFAULT_COMMANDS, start=1):
             checkbox = ttk.Checkbutton(
@@ -104,13 +105,14 @@ class AppUI:
     def _build_action_buttons(self) -> None:
         frame = ttk.Frame(self.root)
         frame.grid(row=4, column=0, sticky="ew", padx=12, pady=6)
-        for idx in range(4):
+        for idx in range(5):
             frame.columnconfigure(idx, weight=1)
 
         ttk.Button(frame, text="Connect", command=self.connect).grid(row=0, column=0, sticky="ew", padx=6, pady=6)
         ttk.Button(frame, text="Disconnect", command=self.disconnect).grid(row=0, column=1, sticky="ew", padx=6, pady=6)
         ttk.Button(frame, text="Send", command=self.send_websocket).grid(row=0, column=2, sticky="ew", padx=6, pady=6)
-        ttk.Button(frame, text="Send HTTP", command=self.send_http).grid(row=0, column=3, sticky="ew", padx=6, pady=6)
+        ttk.Button(frame, text="Handshake", command=self.send_handshake).grid(row=0, column=3, sticky="ew", padx=6, pady=6)
+        ttk.Button(frame, text="Send HTTP", command=self.send_http).grid(row=0, column=4, sticky="ew", padx=6, pady=6)
 
     def _build_log_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Logs")
@@ -163,6 +165,10 @@ class AppUI:
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
 
+    def _handle_handshake_sent(self, handshake_payload: dict) -> None:
+        """Handle handshake sent event."""
+        self.logger.log(f"Handshake payload: {json.dumps(handshake_payload, indent=2)}")
+
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())
 
@@ -174,6 +180,13 @@ class AppUI:
         if payload is None:
             return
         self.ws_manager.send_json(payload)
+
+    def send_handshake(self) -> None:
+        """Send handshake message manually."""
+        if not self.ws_connected:
+            self.logger.log("Cannot send handshake: WebSocket not connected. Click 'Connect' first.")
+            return
+        self.ws_manager.send_handshake()
 
     def send_http(self) -> None:
         request_data = self._parse_request_json()

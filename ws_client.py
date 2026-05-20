@@ -11,13 +11,56 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        on_handshake_sent: Optional[Callable[[dict], None]] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.on_handshake_sent = on_handshake_sent
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
+        self.handshake_config = {
+            "clientId": "default-client",
+            "clientVersion": "1.0.0",
+            "capabilities": ["WebSocket", "HTTP"],
+        }
+        self.auto_send_handshake = True
+
+    def set_handshake_config(self, config: dict) -> None:
+        """Update handshake configuration with dynamic values."""
+        self.handshake_config.update(config)
+        self.logger.log(f"Handshake config updated: {self.handshake_config}")
+
+    def set_auto_send_handshake(self, enabled: bool) -> None:
+        """Enable/disable automatic handshake sending on connection."""
+        self.auto_send_handshake = enabled
+        self.logger.log(f"Auto-send handshake: {'enabled' if enabled else 'disabled'}")
+
+    def send_handshake(self) -> None:
+        """Manually send a handshake message."""
+        if not self.connected or self.ws_app is None:
+            self.logger.log("Cannot send handshake: WebSocket not connected.")
+            return
+
+        handshake_payload = self._build_handshake_payload()
+        self.send_json(handshake_payload)
+        
+        if self.on_handshake_sent:
+            self.on_handshake_sent(handshake_payload)
+        
+        self.logger.log(f"Handshake sent: {json.dumps(handshake_payload)}")
+
+    def _build_handshake_payload(self) -> dict:
+        """Build handshake message payload."""
+        from datetime import datetime
+        return {
+            "action": "handshake",
+            "clientId": self.handshake_config.get("clientId", "default-client"),
+            "clientVersion": self.handshake_config.get("clientVersion", "1.0.0"),
+            "capabilities": self.handshake_config.get("capabilities", ["WebSocket", "HTTP"]),
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+        }
 
     def connect(self, ws_url: str) -> None:
         if self.connected:
@@ -77,8 +120,20 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        # Auto-send handshake after successful connection
+        if self.auto_send_handshake:
+            self.send_handshake()
 
     def _on_message(self, _ws, message: str) -> None:
+        # Handle handshake response
+        try:
+            msg_data = json.loads(message)
+            if msg_data.get("action") == "handshake_response" or msg_data.get("action") == "handshake":
+                self.logger.log(f"Handshake response received: {message}")
+        except json.JSONDecodeError:
+            pass
+        
         if self.on_message:
             self.on_message(message)
         else:

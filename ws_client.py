@@ -3,6 +3,7 @@ import threading
 from typing import Callable, Optional
 
 from websocket import WebSocketApp
+from utilities import validate_handshake_payload
 
 
 class WebSocketManager:
@@ -11,6 +12,8 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        auto_handshake: bool = True,
+        handshake_payload: Optional[dict] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
@@ -18,6 +21,13 @@ class WebSocketManager:
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
+        self.auto_handshake = auto_handshake
+        self.handshake_payload = handshake_payload or {
+            "type": "handshake",
+            "clientId": "iot-device-simulator",
+            "version": "1.0",
+            "token": "",
+        }
 
     def connect(self, ws_url: str) -> None:
         if self.connected:
@@ -77,6 +87,50 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        # Automatically send handshake if enabled
+        if self.auto_handshake:
+            self._send_handshake()
+    
+    def _validate_payload(self, payload: dict) -> bool:
+        """
+        Validate payload structure before sending.
+        
+        Args:
+            payload: Payload to validate
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        try:
+            json.dumps(payload)
+            return True
+        except (TypeError, ValueError) as exc:
+            self.logger.log(f"Handshake validation error: {exc}")
+            return False
+    
+    def _send_handshake(self) -> None:
+        """
+        Send handshake message if payload is valid.
+        """
+        if not self.connected:
+            self.logger.log("Handshake skipped: WebSocket not connected.")
+            return
+        
+        is_valid, error_msg = validate_handshake_payload(self.handshake_payload)
+        if not is_valid:
+            self.logger.log(f"Handshake validation failed: {error_msg}")
+            return
+        
+        if not self._validate_payload(self.handshake_payload):
+            return
+        
+        try:
+            raw_payload = json.dumps(self.handshake_payload)
+            self.ws_app.send(raw_payload)
+            self.logger.log(f"Sent WebSocket handshake: {raw_payload}")
+        except Exception as exc:
+            self.logger.log(f"Handshake send error: {exc}")
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

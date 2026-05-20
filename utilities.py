@@ -1,7 +1,17 @@
+import os
 from datetime import datetime
 
 
 DEFAULT_COMMANDS = [
+    {
+        "name": "Handshake",
+        "payload": {
+            "type": "handshake",
+            "clientId": os.getenv("IOT_CLIENT_ID", "iot-device-simulator"),
+            "version": "1.0",
+            "token": os.getenv("IOT_AUTH_TOKEN", ""),
+        },
+    },
     {
         "name": "Ping",
         "payload": {
@@ -46,6 +56,50 @@ DEFAULT_COMMANDS = [
         },
     },
 ]
+
+
+def validate_handshake_payload(payload: dict) -> tuple[bool, str]:
+    """
+    Validate handshake message structure.
+    
+    Args:
+        payload: Payload dictionary to validate
+        
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    if not isinstance(payload, dict):
+        return False, "Handshake payload must be a dictionary"
+    
+    if "type" not in payload:
+        return False, "Handshake payload missing required field: 'type'"
+    
+    if payload.get("type") != "handshake":
+        return False, "Handshake 'type' field must be 'handshake'"
+    
+    if "clientId" not in payload:
+        return False, "Handshake payload missing required field: 'clientId'"
+    
+    if "version" not in payload:
+        return False, "Handshake payload missing required field: 'version'"
+    
+    return True, ""
+
+
+def is_handshake_message(payload: dict) -> bool:
+    """
+    Check if a message is a handshake message.
+    
+    Args:
+        payload: Message payload to check
+        
+    Returns:
+        True if message type is 'handshake', False otherwise
+    """
+    try:
+        return isinstance(payload, dict) and payload.get("type") == "handshake"
+    except (TypeError, AttributeError):
+        return False
 
 
 class AppLogger:

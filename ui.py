@@ -16,6 +16,7 @@ class AppUI:
         self.root.minsize(900, 680)
 
         self.selected_option = tk.IntVar(value=0)
+        self.auto_handshake_var = tk.BooleanVar(value=False)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
 
@@ -62,7 +63,8 @@ class AppUI:
     def _build_default_commands_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Default commands")
         frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
-        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        for column_index in range(len(DEFAULT_COMMANDS)):
+            frame.columnconfigure(column_index, weight=1)
 
         for index, command in enumerate(DEFAULT_COMMANDS, start=1):
             checkbox = ttk.Checkbutton(
@@ -85,6 +87,14 @@ class AppUI:
 
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Checkbutton(
+            frame,
+            text="Auto handshake on connect",
+            variable=self.auto_handshake_var,
+            onvalue=True,
+            offvalue=False,
+        ).grid(row=2, column=0, columnspan=2, sticky="w", padx=8, pady=6)
 
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
@@ -158,10 +168,52 @@ class AppUI:
             return None
 
     def _handle_ws_message(self, message: str) -> None:
-        self.logger.log(f"WebSocket received: {message}")
+        try:
+            parsed = json.loads(message)
+        except json.JSONDecodeError:
+            self.logger.log(f"WebSocket received: {message}")
+            return
+
+        action = parsed.get("action")
+        if action in ("handshake_response", "handshake_ack"):
+            self.logger.log(f"Handshake response received: {message}")
+        else:
+            self.logger.log(f"WebSocket received: {message}")
+
+        if isinstance(parsed, dict) and "connectionState" in parsed:
+            connection_state = parsed["connectionState"]
+            if isinstance(connection_state, str) and connection_state.lower() == "connected":
+                self.ws_connected = True
+                self.logger.log("Connection state updated from handshake response: connected")
+            elif isinstance(connection_state, str) and connection_state.lower() == "disconnected":
+                self.ws_connected = False
+                self.logger.log("Connection state updated from handshake response: disconnected")
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+        if connected:
+            self.root.after(0, self._maybe_send_auto_handshake)
+
+    def _maybe_send_auto_handshake(self) -> None:
+        if not self.auto_handshake_var.get():
+            return
+
+        selected = self.selected_option.get()
+        if selected == 0:
+            self.logger.log("Auto-handshake enabled but no default command is selected.")
+            return
+
+        selected_command = DEFAULT_COMMANDS[selected - 1]
+        if selected_command["name"] != "Handshake":
+            self.logger.log("Auto-handshake enabled but selected default command is not Handshake.")
+            return
+
+        payload = self._parse_request_json()
+        if payload is None:
+            self.logger.log("Auto-handshake aborted: invalid handshake payload.")
+            return
+
+        self.ws_manager.send_handshake(payload)
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())

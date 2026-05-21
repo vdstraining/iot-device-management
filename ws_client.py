@@ -69,6 +69,26 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"WebSocket send error: {exc}")
 
+    def send_handshake(self, payload: dict) -> None:
+        if not self.connected or self.ws_app is None:
+            self.logger.log("Cannot send handshake: WebSocket is not connected.")
+            return
+
+        if not isinstance(payload, dict):
+            self.logger.log("Handshake payload must be a JSON object.")
+            return
+
+        if payload.get("action") != "handshake":
+            self.logger.log("Handshake payload must include action: handshake.")
+            return
+
+        try:
+            raw_payload = json.dumps(payload)
+            self.ws_app.send(raw_payload)
+            self.logger.log(f"Sent handshake message: {raw_payload}")
+        except Exception as exc:
+            self.logger.log(f"WebSocket handshake send error: {exc}")
+
     def _set_connected(self, value: bool) -> None:
         self.connected = value
         if self.on_status_change:

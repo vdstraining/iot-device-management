@@ -1,5 +1,14 @@
 [
   {
+    "name": "Handshake",
+    "payload": {
+      "type": "handshake",
+      "clientId": "iot-device-simulator",
+      "version": "1.0",
+      "token": ""
+    }
+  },
+  {
     "name": "Ping",
     "payload": {
       "action": "ping",

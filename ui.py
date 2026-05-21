@@ -5,7 +5,7 @@ from tkinter.scrolledtext import ScrolledText
 
 from ws_client import WebSocketManager
 from http_client import HttpClient
-from utilities import AppLogger, DEFAULT_COMMANDS
+from utilities import AppLogger, DEFAULT_COMMANDS, is_handshake_message
 
 
 class AppUI:
@@ -62,7 +62,10 @@ class AppUI:
     def _build_default_commands_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Default commands")
         frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
-        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        # Create grid with enough columns for all default commands (6 currently)
+        max_cols = max(len(DEFAULT_COMMANDS), 5)
+        for idx in range(max_cols):
+            frame.columnconfigure(idx, weight=1)
 
         for index, command in enumerate(DEFAULT_COMMANDS, start=1):
             checkbox = ttk.Checkbutton(
@@ -159,6 +162,15 @@ class AppUI:
 
     def _handle_ws_message(self, message: str) -> None:
         self.logger.log(f"WebSocket received: {message}")
+        
+        # Try to parse message as JSON to check if it's a handshake response
+        try:
+            payload = json.loads(message)
+            if is_handshake_message(payload):
+                self.logger.log("Handshake response received and logged.")
+        except json.JSONDecodeError:
+            # Not JSON, just a regular message
+            pass
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected

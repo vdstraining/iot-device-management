@@ -32,6 +32,15 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "replace-me",
+            "token": "replace-me",
+            "capabilities": ["subscribe", "ping", "echo"],
+        },
+    },
+    {
         "name": "HTTP POST sample",
         "payload": {
             "method": "POST",

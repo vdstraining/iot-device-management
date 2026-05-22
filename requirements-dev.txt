@@ -1,0 +1,5 @@
+pytest
+jsonschema
+websockets
+websocket-client
+requests

@@ -92,7 +92,10 @@ class WebSocketManager:
         """Build, validate, and send the handshake message using config precedence.
         runtime_config: optional overrides for this send.
         """
-        cfg = get_config(runtime_config or {})
+        # start from instance config then apply runtime overrides
+        cfg = dict(self.config or {})
+        if runtime_config:
+            cfg.update(runtime_config)
 
         payload = {
             "type": "handshake",

@@ -24,10 +24,12 @@ class AppUI:
 
         self.logger = AppLogger(self._append_log)
         self.http_client = HttpClient(self.logger)
+        handshake_payload = next((cmd["payload"] for cmd in DEFAULT_COMMANDS if cmd["name"] == "Handshake"), None)
         self.ws_manager = WebSocketManager(
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            handshake_config=handshake_payload,
         )
         self.ws_connected = False
 

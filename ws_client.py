@@ -1,5 +1,6 @@
 import json
 import threading
+from datetime import datetime
 from typing import Callable, Optional
 
 from websocket import WebSocketApp
@@ -11,10 +12,12 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        handshake_config: Optional[dict] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.handshake_config = handshake_config
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
@@ -57,6 +60,21 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"Disconnect error: {exc}")
 
+    def set_handshake_config(self, config: Optional[dict]) -> None:
+        """Set the handshake configuration for auto-sending on connection."""
+        self.handshake_config = config
+
+    def _apply_dynamic_substitution(self, payload: dict) -> dict:
+        """Apply dynamic field substitution for timestamp and other fields."""
+        result = payload.copy()
+        
+        # Substitute timestamp if it contains a placeholder
+        if isinstance(result.get("timestamp"), str):
+            if result["timestamp"] in ("", "{{timestamp}}", "{timestamp}"):
+                result["timestamp"] = datetime.now().isoformat() + "Z"
+        
+        return result
+
     def send_json(self, payload: dict) -> None:
         if not self.connected or self.ws_app is None:
             self.logger.log("Cannot send via WebSocket: not connected.")
@@ -77,6 +95,11 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        # Auto-send handshake if configured
+        if self.handshake_config:
+            handshake_payload = self._apply_dynamic_substitution(self.handshake_config)
+            self.send_json(handshake_payload)
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

@@ -3,6 +3,15 @@ from datetime import datetime
 
 DEFAULT_COMMANDS = [
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "client-001",
+            "capabilities": ["websocket", "http"],
+            "timestamp": "2026-05-22T00:00:00Z",
+        },
+    },
+    {
         "name": "Ping",
         "payload": {
             "action": "ping",

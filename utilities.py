@@ -1,7 +1,31 @@
+import json
+import os
 from datetime import datetime
 
 
 DEFAULT_COMMANDS = [
+    {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "iot-device-simulator-001",
+            "capabilities": [
+                "websocket",
+                "http",
+                "json-messaging",
+                "command-execution",
+            ],
+            "session_metadata": {
+                "version": "1.0",
+                "application": "IoT Device Simulator",
+                "platform": "Tkinter",
+            },
+            "authentication_context": {
+                "auth_type": "bearer",
+                "token": "",
+            },
+        },
+    },
     {
         "name": "Ping",
         "payload": {
@@ -48,7 +72,51 @@ DEFAULT_COMMANDS = [
 ]
 
 
+def load_handshake_config(config_file: str = "handshake_config.json") -> dict:
+    """
+    Load handshake configuration from JSON file.
+    
+    Args:
+        config_file: Path to the handshake configuration file
+        
+    Returns:
+        Dictionary containing handshake configuration, or defaults if file not found
+    """
+    default_config = {
+        "enabled": True,
+        "auto_trigger": True,
+        "clientId": "iot-device-simulator-001",
+        "capabilities": [
+            "websocket",
+            "http",
+            "json-messaging",
+            "command-execution",
+        ],
+        "session_metadata": {
+            "version": "1.0",
+            "application": "IoT Device Simulator",
+            "platform": "Tkinter",
+        },
+        "authentication_context": {
+            "auth_type": "bearer",
+            "token": "",
+        },
+    }
+    
+    if not os.path.exists(config_file):
+        return default_config
+    
+    try:
+        with open(config_file, "r") as f:
+            config = json.load(f)
+        # Merge with defaults to ensure all required keys exist
+        return {**default_config, **config}
+    except Exception:
+        return default_config
+
+
 class AppLogger:
+
     def __init__(self, callback) -> None:
         self.callback = callback
 

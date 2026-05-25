@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "auto_trigger": true,
+  "clientId": "test-handshake-device-001",
+  "capabilities": [
+    "websocket",
+    "http",
+    "json-messaging",
+    "command-execution"
+  ],
+  "session_metadata": {
+    "version": "1.0",
+    "application": "Test Suite",
+    "platform": "Tkinter",
+    "test_id": "handshake-001"
+  },
+  "authentication_context": {
+    "auth_type": "bearer",
+    "token": "test-token-abc123"
+  }
+}

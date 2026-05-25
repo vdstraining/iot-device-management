@@ -5,7 +5,7 @@ from tkinter.scrolledtext import ScrolledText
 
 from ws_client import WebSocketManager
 from http_client import HttpClient
-from utilities import AppLogger, DEFAULT_COMMANDS
+from utilities import AppLogger, DEFAULT_COMMANDS, load_handshake_config
 
 
 class AppUI:
@@ -24,10 +24,15 @@ class AppUI:
 
         self.logger = AppLogger(self._append_log)
         self.http_client = HttpClient(self.logger)
+        
+        # Load handshake configuration
+        self.handshake_config = load_handshake_config()
+        
         self.ws_manager = WebSocketManager(
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            handshake_config=self.handshake_config,
         )
         self.ws_connected = False
 
@@ -104,13 +109,14 @@ class AppUI:
     def _build_action_buttons(self) -> None:
         frame = ttk.Frame(self.root)
         frame.grid(row=4, column=0, sticky="ew", padx=12, pady=6)
-        for idx in range(4):
+        for idx in range(5):
             frame.columnconfigure(idx, weight=1)
 
         ttk.Button(frame, text="Connect", command=self.connect).grid(row=0, column=0, sticky="ew", padx=6, pady=6)
         ttk.Button(frame, text="Disconnect", command=self.disconnect).grid(row=0, column=1, sticky="ew", padx=6, pady=6)
-        ttk.Button(frame, text="Send", command=self.send_websocket).grid(row=0, column=2, sticky="ew", padx=6, pady=6)
-        ttk.Button(frame, text="Send HTTP", command=self.send_http).grid(row=0, column=3, sticky="ew", padx=6, pady=6)
+        ttk.Button(frame, text="Send Handshake", command=self.send_handshake).grid(row=0, column=2, sticky="ew", padx=6, pady=6)
+        ttk.Button(frame, text="Send", command=self.send_websocket).grid(row=0, column=3, sticky="ew", padx=6, pady=6)
+        ttk.Button(frame, text="Send HTTP", command=self.send_http).grid(row=0, column=4, sticky="ew", padx=6, pady=6)
 
     def _build_log_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Logs")
@@ -174,6 +180,10 @@ class AppUI:
         if payload is None:
             return
         self.ws_manager.send_json(payload)
+
+    def send_handshake(self) -> None:
+        """Trigger manual handshake send."""
+        self.ws_manager.send_handshake()
 
     def send_http(self) -> None:
         request_data = self._parse_request_json()

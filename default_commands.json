@@ -1,5 +1,27 @@
 [
   {
+    "name": "Handshake",
+    "payload": {
+      "action": "handshake",
+      "clientId": "iot-device-simulator-001",
+      "capabilities": [
+        "websocket",
+        "http",
+        "json-messaging",
+        "command-execution"
+      ],
+      "session_metadata": {
+        "version": "1.0",
+        "application": "IoT Device Simulator",
+        "platform": "Tkinter"
+      },
+      "authentication_context": {
+        "auth_type": "bearer",
+        "token": ""
+      }
+    }
+  },
+  {
     "name": "Ping",
     "payload": {
       "action": "ping",

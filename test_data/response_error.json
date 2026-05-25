@@ -1,0 +1,7 @@
+{
+  "action": "handshake_ack",
+  "status": "error",
+  "error_code": "AUTH_FAILED",
+  "error_message": "Authentication token invalid or expired",
+  "message": "Handshake failed: authentication required"
+}

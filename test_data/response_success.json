@@ -1,0 +1,12 @@
+{
+  "action": "handshake_ack",
+  "status": "success",
+  "sessionId": "sess-test-abc123",
+  "serverVersion": "2.1.0",
+  "features": [
+    "real-time-events",
+    "command-execution",
+    "device-management"
+  ],
+  "message": "Handshake successful, session established"
+}

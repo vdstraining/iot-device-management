@@ -1,8 +1,11 @@
 import json
 import threading
-from typing import Callable, Optional
+from typing import Callable, Optional, Any, Dict
 
 from websocket import WebSocketApp
+
+from jsonschema import validate, ValidationError
+from config import get_config
 
 
 class WebSocketManager:
@@ -11,6 +14,7 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        runtime_config: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
@@ -18,6 +22,21 @@ class WebSocketManager:
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
+        self.config = get_config(runtime_config)
+        self.connection_state: Dict[str, Any] = {}
+
+        # Handshake JSON schema
+        self._handshake_schema = {
+            "type": "object",
+            "properties": {
+                "type": {"const": "handshake"},
+                "clientId": {"type": "string"},
+                "capabilities": {"type": "object"},
+                "token": {"type": "string"},
+            },
+            "required": ["type", "clientId"],
+            "additionalProperties": True,
+        }
 
     def connect(self, ws_url: str) -> None:
         if self.connected:
@@ -69,6 +88,52 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"WebSocket send error: {exc}")
 
+    def send_handshake(self, runtime_config: Optional[Dict[str, Any]] = None) -> None:
+        """Build, validate, and send the handshake message using config precedence.
+        runtime_config: optional overrides for this send.
+        """
+        # start from instance config then apply runtime overrides
+        cfg = dict(self.config or {})
+        if runtime_config:
+            cfg.update(runtime_config)
+
+        payload = {
+            "type": "handshake",
+            "clientId": cfg.get("handshake.clientId"),
+        }
+        if cfg.get("handshake.token"):
+            payload["token"] = cfg.get("handshake.token")
+
+        # validate schema
+        try:
+            validate(instance=payload, schema=self._handshake_schema)
+        except ValidationError as exc:
+            self.logger.log(f"Handshake validation failed: {exc.message}")
+            return
+
+        # log outgoing with redacted token
+        logged = self._mask_token_in_obj(payload)
+        try:
+            raw_payload = json.dumps(payload)
+            self.ws_app.send(raw_payload)
+            self.logger.log(f"Outgoing -> {json.dumps(logged)}")
+        except Exception as exc:
+            self.logger.log(f"WebSocket handshake send error: {exc}")
+
+    def _mask_token_in_obj(self, obj: Any) -> Any:
+        """Return a copy of obj with 'token' fields masked (first 4 chars + '***')."""
+        if isinstance(obj, dict):
+            out = {}
+            for k, v in obj.items():
+                if k == "token" and isinstance(v, str) and v:
+                    out[k] = v[:4] + "***"
+                else:
+                    out[k] = self._mask_token_in_obj(v)
+            return out
+        if isinstance(obj, list):
+            return [self._mask_token_in_obj(i) for i in obj]
+        return obj
+
     def _set_connected(self, value: bool) -> None:
         self.connected = value
         if self.on_status_change:
@@ -77,12 +142,35 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        # Auto-send handshake if enabled
+        try:
+            if self.config.get("handshake.autoSend", True):
+                # send after open
+                self.send_handshake()
+        except Exception:
+            # do not crash on handshake send failure
+            pass
 
     def _on_message(self, _ws, message: str) -> None:
-        if self.on_message:
-            self.on_message(message)
+        # Attempt to parse JSON and mask token before logging
+        try:
+            parsed = json.loads(message)
+        except Exception:
+            parsed = None
+
+        if parsed is not None and isinstance(parsed, dict):
+            # mask token for logging
+            logged = self._mask_token_in_obj(parsed)
+            self.logger.log(f"Incoming <- {json.dumps(logged)}")
+            # optionally apply to connection state
+            if self.config.get("handshake.applyResponseToState"):
+                # store entire parsed object
+                self.connection_state["handshakeResponse"] = parsed
         else:
             self.logger.log(f"WebSocket received: {message}")
+
+        if self.on_message:
+            self.on_message(message)
 
     def _on_error(self, _ws, error) -> None:
         self.logger.log(f"WebSocket error: {error}")

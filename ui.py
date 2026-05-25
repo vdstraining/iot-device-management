@@ -28,6 +28,7 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            client_id="device-001",
         )
         self.ws_connected = False
 

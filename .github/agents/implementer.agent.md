@@ -5,10 +5,10 @@ tools:
   - search/codebase
   - search/usages
   - edit
-  - runCommands
+  - execute/runInTerminal
   - read/terminalLastCommand
 model:
-  - GPT-5.4 (copilot)
+  - Claude Haiku 4.5 (copilot)
 handoffs:
   - label: Generate Tests
     agent: Test Generator

@@ -9,7 +9,7 @@ agents:
   - Implementer
   - Test Generator
 model:
-  - Claude Sonnet 4.6 (copilot)
+  - Claude Haiku 4.5 (copilot)
 ---
 
 You are an orchestration agent.

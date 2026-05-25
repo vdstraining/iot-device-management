@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"my-mcp-server-8fa3c0cb": {
+			"url": "https://mcp.atlassian.com/v1/mcp ",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}

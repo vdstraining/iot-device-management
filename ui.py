@@ -28,6 +28,8 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            device_id="iot-device-001",
+            handshake_timeout=30,
         )
         self.ws_connected = False
 
@@ -85,6 +87,14 @@ class AppUI:
 
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Handshake Status:").grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        self.handshake_status_label = ttk.Label(frame, text="Not Connected", foreground="red")
+        self.handshake_status_label.grid(row=2, column=1, sticky="w", padx=8, pady=6)
+
+        ttk.Label(frame, text="Capabilities:").grid(row=3, column=0, sticky="w", padx=8, pady=6)
+        self.capabilities_label = ttk.Label(frame, text="None", foreground="gray")
+        self.capabilities_label.grid(row=3, column=1, sticky="w", padx=8, pady=6)
 
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
@@ -162,6 +172,27 @@ class AppUI:
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+        if connected:
+            # Update handshake status
+            self.handshake_status_label.configure(
+                text=f"Connected - Handshake: {self.ws_manager.handshake_state}",
+                foreground="green"
+            )
+            # Display negotiated capabilities
+            capabilities = ", ".join(self.ws_manager.negotiated_capabilities) if self.ws_manager.negotiated_capabilities else "None"
+            self.capabilities_label.configure(
+                text=capabilities,
+                foreground="blue"
+            )
+        else:
+            self.handshake_status_label.configure(
+                text="Not Connected",
+                foreground="red"
+            )
+            self.capabilities_label.configure(
+                text="None",
+                foreground="gray"
+            )
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())

@@ -32,6 +32,15 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "iot-client-001",
+            "timestamp": "2026-05-25T12:00:00Z",
+            "version": "1.0",
+        },
+    },
+    {
         "name": "HTTP POST sample",
         "payload": {
             "method": "POST",

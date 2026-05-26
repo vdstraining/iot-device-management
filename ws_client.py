@@ -3,6 +3,7 @@ import threading
 from typing import Callable, Optional
 
 from websocket import WebSocketApp
+from utilities import DEFAULT_COMMANDS
 
 
 class WebSocketManager:
@@ -77,6 +78,16 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        # Auto-send handshake message on successful connection
+        handshake_payload = DEFAULT_COMMANDS[4]["payload"]  # Handshake is at index 4
+        try:
+            if self.ws_app:
+                raw_payload = json.dumps(handshake_payload)
+                self.ws_app.send(raw_payload)
+                self.logger.log(f"Auto-sent handshake: {raw_payload}")
+        except Exception as exc:
+            self.logger.log(f"Handshake send error: {exc}")
 
     def _on_message(self, _ws, message: str) -> None:
         if self.on_message:

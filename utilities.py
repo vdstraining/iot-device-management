@@ -32,6 +32,15 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "client_id": "iot-simulator-001",
+            "protocol_version": "1.0",
+            "timestamp": "2026-03-27T12:00:00Z",
+        },
+    },
+    {
         "name": "HTTP POST sample",
         "payload": {
             "method": "POST",

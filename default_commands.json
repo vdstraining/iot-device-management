@@ -1,5 +1,29 @@
 [
   {
+    "name": "HANDSHAKE_INIT",
+    "payload": {
+      "type": "HANDSHAKE_INIT",
+      "protocol_version": "1.0",
+      "device_id": "iot-device-001",
+      "capabilities": ["websocket", "json"],
+      "auth_token": "your-auth-token-here",
+      "timestamp": "2026-05-26T12:00:00Z"
+    }
+  },
+  {
+    "name": "HANDSHAKE_ACK",
+    "payload": {
+      "type": "HANDSHAKE_ACK",
+      "status": "success",
+      "protocol_version": "1.0",
+      "server_info": {
+        "version": "1.0.0",
+        "capabilities": ["websocket", "json", "binary"]
+      },
+      "timestamp": "2026-05-26T12:00:00Z"
+    }
+  },
+  {
     "name": "Ping",
     "payload": {
       "action": "ping",

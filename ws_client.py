@@ -4,6 +4,8 @@ from typing import Callable, Optional
 
 from websocket import WebSocketApp
 
+from handshake import HandshakeHandler
+
 
 class WebSocketManager:
     def __init__(
@@ -18,6 +20,7 @@ class WebSocketManager:
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
+        self.handshake_handler = HandshakeHandler(logger)
 
     def connect(self, ws_url: str) -> None:
         if self.connected:
@@ -57,6 +60,16 @@ class WebSocketManager:
         except Exception as exc:
             self.logger.log(f"Disconnect error: {exc}")
 
+    def update_handshake_config(self, **kwargs) -> None:
+        """
+        Update handshake configuration (e.g., token, client_id).
+
+        Args:
+            **kwargs: Configuration fields to update
+        """
+        self.handshake_handler.update_config(**kwargs)
+        self.logger.log(f"Handshake config updated: {kwargs}")
+
     def send_json(self, payload: dict) -> None:
         if not self.connected or self.ws_app is None:
             self.logger.log("Cannot send via WebSocket: not connected.")
@@ -77,8 +90,22 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        # Trigger handshake 2 seconds after connection
+        self.handshake_handler.reset_for_new_connection()
+        threading.Timer(
+            2.0,
+            self._send_handshake,
+        ).start()
+
+    def _send_handshake(self) -> None:
+        """Send handshake message to server."""
+        if self.connected and self.ws_app is not None:
+            self.handshake_handler.send_handshake(self.send_json)
 
     def _on_message(self, _ws, message: str) -> None:
+        # Handle handshake responses
+        self.handshake_handler.handle_handshake_response(message)
+        
         if self.on_message:
             self.on_message(message)
         else:

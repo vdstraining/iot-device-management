@@ -10,6 +10,17 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "client-uuid-1234",
+            "token": "replace-me-with-token",
+            "clientVersion": "1.0.0",
+            "protocolVersion": "1.0",
+            "timestamp": "2026-03-27T12:00:00Z",
+        },
+    },
+    {
         "name": "Login",
         "payload": {
             "action": "login",

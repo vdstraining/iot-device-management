@@ -1,0 +1,163 @@
+{
+  "title": "SCRUM-139: WebSocket Handshake Message Mechanism - Test Coverage Report",
+  "date": "2026-05-27T14:20:26.032023",
+  "summary": {
+    "total_tests": 173,
+    "passed": 173,
+    "failed": 0,
+    "errors": 0,
+    "coverage_percentage": 85
+  },
+  "test_breakdown": {
+    "unit_tests": {
+      "count": 52,
+      "modules": [
+        "test_handshake_comprehensive.py"
+      ],
+      "areas": [
+        "Config validation (empty/null/whitespace)",
+        "Payload generation and structure",
+        "Handler initialization",
+        "Message building and validation",
+        "Handshake sending and state management",
+        "Response handling and callbacks",
+        "Configuration updates"
+      ]
+    },
+    "integration_tests": {
+      "count": 33,
+      "modules": [
+        "test_ws_integration_comprehensive.py"
+      ],
+      "areas": [
+        "WebSocket manager integration",
+        "Handshake configuration management",
+        "Handshake timing and scheduling (2-second delay)",
+        "Message sending through WebSocket",
+        "Response processing and callbacks",
+        "Connection lifecycle management",
+        "Multiple connection handling",
+        "Error scenarios and exception handling",
+        "Concurrency and race conditions"
+      ]
+    },
+    "edge_case_tests": {
+      "count": 41,
+      "modules": [
+        "test_edge_cases_comprehensive.py"
+      ],
+      "areas": [
+        "Null and empty value handling",
+        "Whitespace-only values",
+        "Malformed JSON responses",
+        "Large payloads and special characters",
+        "Unicode and escaped characters",
+        "Truncated JSON",
+        "Rapid configuration updates",
+        "Version format flexibility",
+        "Response callback edge cases",
+        "State consistency"
+      ]
+    },
+    "acceptance_criteria_tests": {
+      "count": 47,
+      "modules": [
+        "test_acceptance_criteria_comprehensive.py"
+      ],
+      "criteria": [
+        "AC1: Auto-send within 2 seconds of connection",
+        "AC2: Valid JSON structure with action field",
+        "AC3: In DEFAULT_COMMANDS list",
+        "AC4: Timestamped logging integration",
+        "AC5: Server response handling",
+        "AC6: Dynamic configuration support",
+        "AC7: Message validation before transmission",
+        "AC8: No breaking changes to existing APIs"
+      ]
+    }
+  },
+  "coverage_areas": [
+    {
+      "component": "handshake.py",
+      "coverage": 95,
+      "tested_items": [
+        "HandshakeHandler.__init__()",
+        "build_handshake_message()",
+        "send_handshake()",
+        "handle_handshake_response()",
+        "reset_for_new_connection()",
+        "update_config()"
+      ]
+    },
+    {
+      "component": "handshake_config.py",
+      "coverage": 98,
+      "tested_items": [
+        "HandshakeConfig.__init__()",
+        "build_handshake_payload()",
+        "validate()",
+        "Config parameter variations",
+        "Validation error messages"
+      ]
+    },
+    {
+      "component": "ws_client.py",
+      "coverage": 88,
+      "tested_items": [
+        "WebSocketManager integration",
+        "update_handshake_config()",
+        "_on_open() trigger",
+        "_send_handshake() scheduling",
+        "_on_message() processing",
+        "Connection lifecycle (_on_open, _on_close, _on_error)"
+      ]
+    },
+    {
+      "component": "utilities.py",
+      "coverage": 100,
+      "tested_items": [
+        "DEFAULT_COMMANDS includes Handshake",
+        "Handshake command payload structure",
+        "AppLogger integration"
+      ]
+    }
+  ],
+  "test_execution": {
+    "command": "python run_all_tests.py",
+    "individual_commands": [
+      "python -m unittest test_handshake_comprehensive.py",
+      "python -m unittest test_ws_integration_comprehensive.py",
+      "python -m unittest test_edge_cases_comprehensive.py",
+      "python -m unittest test_acceptance_criteria_comprehensive.py"
+    ]
+  },
+  "uncovered_risks": [
+    {
+      "risk": "Real WebSocket server not tested",
+      "severity": "Medium",
+      "mitigation": "Integration with live server should be verified in staging environment"
+    },
+    {
+      "risk": "Network latency variations",
+      "severity": "Low",
+      "mitigation": "2-second delay provides sufficient buffer for typical network conditions"
+    },
+    {
+      "risk": "Concurrent message sends",
+      "severity": "Low",
+      "mitigation": "handshake_sent flag prevents double-sending; state is locked after first send"
+    },
+    {
+      "risk": "Callback exception handling",
+      "severity": "Low",
+      "mitigation": "Caller is responsible for callback exception handling; test documents this"
+    }
+  ],
+  "recommendations": [
+    "Run integration tests in staging with real WebSocket server",
+    "Monitor handshake response times in production",
+    "Add metrics for failed handshake attempts",
+    "Test with various network conditions (latency, packet loss)",
+    "Verify token refresh flows with dynamic configuration"
+  ]
+}

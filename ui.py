@@ -2,6 +2,7 @@ import json
 import tkinter as tk
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
+from typing import Optional
 
 from ws_client import WebSocketManager
 from http_client import HttpClient
@@ -18,6 +19,7 @@ class AppUI:
         self.selected_option = tk.IntVar(value=0)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
+        self.auto_handshake_var = tk.BooleanVar(value=False)
 
         self.request_text = None
         self.log_text = None
@@ -85,6 +87,11 @@ class AppUI:
 
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
+        ttk.Checkbutton(
+            frame,
+            text="Send handshake after connect",
+            variable=self.auto_handshake_var,
+        ).grid(row=2, column=0, columnspan=2, sticky="w", padx=8, pady=6)
 
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
@@ -157,11 +164,31 @@ class AppUI:
             self.logger.log(f"Invalid JSON: {exc}")
             return None
 
+    def _get_handshake_command(self) -> Optional[dict]:
+        for command in DEFAULT_COMMANDS:
+            if command["name"] == "Handshake":
+                return command["payload"]
+        self.logger.log("Handshake command is not available in default commands.")
+        return None
+
     def _handle_ws_message(self, message: str) -> None:
         self.logger.log(f"WebSocket received: {message}")
+        try:
+            data = json.loads(message)
+            if isinstance(data, dict) and "connection_state" in data:
+                self.ws_connected = data["connection_state"] == "connected"
+                self.logger.log(f"Connection state updated from response: {data['connection_state']}")
+        except json.JSONDecodeError:
+            pass
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+        if connected and self.auto_handshake_var.get():
+            handshake_payload = self._get_handshake_command()
+            if handshake_payload is None:
+                return
+            self.logger.log("Auto-sending handshake message after WebSocket connect.")
+            self.ws_manager.send_json(handshake_payload)
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())
@@ -172,6 +199,9 @@ class AppUI:
     def send_websocket(self) -> None:
         payload = self._parse_request_json()
         if payload is None:
+            return
+        if not isinstance(payload, dict):
+            self.logger.log("WebSocket payload must be a JSON object.")
             return
         self.ws_manager.send_json(payload)
 

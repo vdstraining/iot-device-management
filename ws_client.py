@@ -2,7 +2,10 @@ import json
 import threading
 from typing import Callable, Optional
 
-from websocket import WebSocketApp
+try:
+    from websocket import WebSocketApp
+except ImportError:
+    WebSocketApp = None
 
 
 class WebSocketManager:
@@ -29,6 +32,10 @@ class WebSocketManager:
             return
 
         self.logger.log(f"Connecting to WebSocket: {ws_url}")
+
+        if WebSocketApp is None:
+            self.logger.log("Cannot connect: websocket-client package is not installed.")
+            return
 
         def run_ws() -> None:
             self.ws_app = WebSocketApp(

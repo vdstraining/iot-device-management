@@ -18,6 +18,11 @@ class AppUI:
         self.selected_option = tk.IntVar(value=0)
         self.ws_url_var = tk.StringVar(value="ws://localhost:8765/ws")
         self.http_url_var = tk.StringVar(value="http://localhost:8765")
+        
+        # Handshake configuration
+        self.auto_handshake_var = tk.BooleanVar(value=True)
+        self.client_id_var = tk.StringVar(value="device-001")
+        self.auth_token_var = tk.StringVar(value="auth-token-xxx")
 
         self.request_text = None
         self.log_text = None
@@ -28,6 +33,7 @@ class AppUI:
             logger=self.logger,
             on_message=self._handle_ws_message,
             on_status_change=self._handle_ws_status_change,
+            on_connect_handshake=self._trigger_handshake_on_connect,
         )
         self.ws_connected = False
 
@@ -44,7 +50,7 @@ class AppUI:
 
     def _build_ui(self) -> None:
         self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(5, weight=1)
+        self.root.rowconfigure(6, weight=1)
 
         title = ttk.Label(
             self.root,
@@ -55,6 +61,7 @@ class AppUI:
 
         self._build_default_commands_section()
         self._build_server_config_section()
+        self._build_handshake_config_section()
         self._build_request_section()
         self._build_action_buttons()
         self._build_log_section()
@@ -86,9 +93,26 @@ class AppUI:
         ttk.Label(frame, text="HTTP Base URL:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         ttk.Entry(frame, textvariable=self.http_url_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
 
+    def _build_handshake_config_section(self) -> None:
+        frame = ttk.LabelFrame(self.root, text="Handshake configuration")
+        frame.grid(row=3, column=0, sticky="ew", padx=12, pady=6)
+        frame.columnconfigure(1, weight=1)
+
+        ttk.Checkbutton(
+            frame,
+            text="Auto-send handshake on connection",
+            variable=self.auto_handshake_var,
+        ).grid(row=0, column=0, columnspan=2, sticky="w", padx=8, pady=6)
+
+        ttk.Label(frame, text="Client ID:").grid(row=1, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.client_id_var).grid(row=1, column=1, sticky="ew", padx=8, pady=6)
+
+        ttk.Label(frame, text="Auth Token:").grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        ttk.Entry(frame, textvariable=self.auth_token_var).grid(row=2, column=1, sticky="ew", padx=8, pady=6)
+
     def _build_request_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Command / Request")
-        frame.grid(row=3, column=0, sticky="nsew", padx=12, pady=6)
+        frame.grid(row=4, column=0, sticky="nsew", padx=12, pady=6)
         frame.columnconfigure(1, weight=1)
         frame.rowconfigure(0, weight=1)
 
@@ -103,7 +127,7 @@ class AppUI:
 
     def _build_action_buttons(self) -> None:
         frame = ttk.Frame(self.root)
-        frame.grid(row=4, column=0, sticky="ew", padx=12, pady=6)
+        frame.grid(row=5, column=0, sticky="ew", padx=12, pady=6)
         for idx in range(4):
             frame.columnconfigure(idx, weight=1)
 
@@ -114,7 +138,7 @@ class AppUI:
 
     def _build_log_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Logs")
-        frame.grid(row=5, column=0, sticky="nsew", padx=12, pady=(6, 12))
+        frame.grid(row=6, column=0, sticky="nsew", padx=12, pady=(6, 12))
         frame.columnconfigure(0, weight=1)
         frame.rowconfigure(0, weight=1)
 
@@ -162,6 +186,19 @@ class AppUI:
 
     def _handle_ws_status_change(self, connected: bool) -> None:
         self.ws_connected = connected
+
+    def _trigger_handshake_on_connect(self) -> None:
+        if not self.auto_handshake_var.get():
+            return
+        
+        handshake_payload = {
+            "action": "handshake",
+            "clientId": self.client_id_var.get().strip(),
+            "token": self.auth_token_var.get().strip(),
+            "capabilities": ["subscribe", "ping", "query"],
+        }
+        self.logger.log(f"Auto-sending handshake: {json.dumps(handshake_payload)}")
+        self.ws_manager.send_json(handshake_payload)
 
     def connect(self) -> None:
         self.ws_manager.connect(self.ws_url_var.get().strip())

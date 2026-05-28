@@ -32,6 +32,15 @@ DEFAULT_COMMANDS = [
         },
     },
     {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "device-001",
+            "token": "auth-token-xxx",
+            "capabilities": ["subscribe", "ping", "query"],
+        },
+    },
+    {
         "name": "HTTP POST sample",
         "payload": {
             "method": "POST",

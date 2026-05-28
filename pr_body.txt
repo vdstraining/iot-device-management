@@ -1,0 +1,28 @@
+﻿## Jira
+- SCRUM-146
+
+## Requirement Summary
+- Add server-side API and background workflow to create and run device firmware update jobs (OTA), allowing authenticated users to schedule firmware rollout to one or many devices and track job status.
+
+## Implementation Summary
+- Added a minimal prototype under `src/features/firmwareJobs/`: types, in-memory model, transport interface, service, controller, worker.
+- Added DB migration `db/migrations/20260527_create_firmware_update_jobs.sql`.
+- Added Jest tests under `src/features/firmwareJobs/__tests__`.
+
+## Changed Areas
+- src/features/firmwareJobs/**
+- db/migrations/20260527_create_firmware_update_jobs.sql
+- package.json, tsconfig.json, jest.config.cjs
+
+## Testing Summary
+- Unit tests: PASSED (basic in-memory tests)
+- Integration tests: not included
+- Simulation tests: not included
+
+## Risks / Follow-ups
+- Transport integration (MQTT/HTTP) needs real implementation.
+- Firmware storage/signing and upload flow undefined; confirm with PO.
+- Rollout safety (batching, throttling, rollback) needs operational policy.
+
+## Reviewer Notes
+- This is a minimal prototype intended for review and extension: replace the in-memory model with DB-backed model and integrate worker scheduling.

@@ -62,7 +62,8 @@ class AppUI:
     def _build_default_commands_section(self) -> None:
         frame = ttk.LabelFrame(self.root, text="Default commands")
         frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
-        frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+        for col_idx in range(len(DEFAULT_COMMANDS)):
+            frame.columnconfigure(col_idx, weight=1)
 
         for index, command in enumerate(DEFAULT_COMMANDS, start=1):
             checkbox = ttk.Checkbutton(

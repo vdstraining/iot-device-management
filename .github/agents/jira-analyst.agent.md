@@ -2,12 +2,12 @@
 name: Jira Analyst
 description: Analyze a Jira ticket from Atlassian MCP and produce implementation-ready requirements.
 tools:
-  - atlassian-mcp-server-30032026/*
+  - my-mcp-server-c8d754ee/*
   - search/codebase
   - search/usages
   - read/problems
 model:
-  - Claude Sonnet 4.6 (copilot)
+  - Claude Haiku 4.5 (copilot)
 handoffs:
   - label: Start Implementation
     agent: Implementer

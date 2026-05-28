@@ -9,7 +9,7 @@ tools:
   - read/terminalLastCommand
   - read/problems
 model:
-  - Claude Sonnet 4.6 (copilot)
+  - Claude Haiku 4.5 (copilot)
 ---
 
 You are a software test engineer focused on high-signal automated tests.

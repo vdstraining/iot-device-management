@@ -45,6 +45,19 @@ DEFAULT_COMMANDS = [
             "timeout": 10,
         },
     },
+    {
+        "name": "Handshake",
+        "payload": {
+            "action": "handshake",
+            "clientId": "client-001",
+            "capabilities": ["websocket", "messages"],
+            "sessionMetadata": {
+                "platform": "python-tkinter",
+                "version": "1.0",
+            },
+            "token": "replace-me",
+        },
+    },
 ]
 
 

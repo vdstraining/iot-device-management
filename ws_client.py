@@ -11,10 +11,14 @@ class WebSocketManager:
         logger,
         on_message: Optional[Callable[[str], None]] = None,
         on_status_change: Optional[Callable[[bool], None]] = None,
+        on_handshake_response: Optional[Callable[[dict], None]] = None,
+        auto_handshake: bool = True,
     ) -> None:
         self.logger = logger
         self.on_message = on_message
         self.on_status_change = on_status_change
+        self.on_handshake_response = on_handshake_response
+        self.auto_handshake = auto_handshake
         self.ws_app = None
         self.ws_thread = None
         self.connected = False
@@ -77,8 +81,31 @@ class WebSocketManager:
     def _on_open(self, _ws) -> None:
         self._set_connected(True)
         self.logger.log("WebSocket connected.")
+        
+        # Send handshake automatically if enabled
+        if self.auto_handshake:
+            self._send_handshake()
+
+    def _send_handshake(self) -> None:
+        """Send handshake message to establish client-server contract."""
+        try:
+            from utilities import generate_handshake
+            handshake = generate_handshake()
+            self.send_json(handshake)
+            self.logger.log(f"Handshake sent: {handshake['clientId']}")
+        except Exception as exc:
+            self.logger.log(f"Handshake send error: {exc}")
 
     def _on_message(self, _ws, message: str) -> None:
+        try:
+            data = json.loads(message)
+            # Check if this is a handshake response
+            if isinstance(data, dict) and data.get("action") == "handshake" and self.on_handshake_response:
+                self.on_handshake_response(data)
+                self.logger.log(f"Handshake response received: {message}")
+        except (json.JSONDecodeError, ValueError):
+            pass
+        
         if self.on_message:
             self.on_message(message)
         else:

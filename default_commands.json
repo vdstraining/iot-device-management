@@ -1,4 +1,12 @@
-[
+﻿[
+  {
+    "name": "Handshake",
+    "payload": {
+      "action": "handshake",
+      "clientId": "client-001",
+      "token": "auth-token-here"
+    }
+  },
   {
     "name": "Ping",
     "payload": {
